@@ -1,0 +1,89 @@
+#!/usr/bin/python
+
+from operator import xor
+import binascii
+import sys
+import struct
+from Crypto.Cipher import AES
+from Crypto.Hash import SHA256
+
+def hextostring(s):
+    return binascii.unhexlify(s)
+
+def chunks(l, n):
+    """ Yield successive n-sized chunks from l.
+    """
+    for i in range(0, len(l), n):
+        yield l[i:i+n]
+
+def xor_arr(a, b):
+    res = [0] * len(a) 
+    for i in range(len(a)):
+        res[i] = xor(a[i], b[i])
+    return res
+
+def read_in_chunks(file_object, chunk_size=1024):
+    """Lazy function (generator) to read a file piece by piece.
+    Default chunk size: 1k."""
+    while True:
+        data = file_object.read(chunk_size)
+        if not data:
+            break
+        yield data
+
+
+#f = open('sample.mp4', 'rb')
+#data = f.read()
+#data = list(chunks(data, 1024))
+#data.reverse()
+#
+#sha = SHA256.new()
+#
+#ans = bytes()
+#
+#for block in data:
+#    t = block + ans
+#    sha.update(t)
+#    ans = sha.digest()
+#
+#print(sha.hexdigest())
+
+#
+#s1 = SHA256.new()
+#s2 = SHA256.new()
+#s3 = SHA256.new()
+#
+#s1.update(b"s1")
+#s2.update(b"s2")
+#print(s1.hexdigest())
+#print(s2.hexdigest())
+#print('s3')
+#s3.update(b"s1")
+#print(s3.hexdigest())
+#s3.update(b"s2")
+#print(s3.hexdigest())
+#
+#
+#exit(0)
+
+#f = open('sample.mp4', 'rb')
+f = open('data', 'rb')
+
+data = read_in_chunks(f)
+data = list(data)
+data.reverse()
+
+#data = data[:10]
+
+ans = bytes()
+
+sha = SHA256.new()
+for block in data:
+    t = block + ans
+    sha = sha.new()
+    sha.update(t)
+    ans = sha.digest()
+    pans = sha.hexdigest()
+
+
+print(pans)

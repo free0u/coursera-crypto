@@ -1,0 +1,77 @@
+#!/usr/bin/python
+
+from operator import xor
+import binascii
+import sys
+import struct
+from Crypto.Cipher import AES
+from Crypto.Hash import SHA256
+
+def hextobytes(s):
+    return binascii.unhexlify(s)
+
+def bytestohex(b):
+    return binascii.hexlify(b).decode("utf-8")
+
+def chunks(l, n):
+    """ Yield successive n-sized chunks from l.
+    """
+    for i in range(0, len(l), n):
+        yield l[i:i+n]
+
+def xor_arr(a, b):
+    res = bytearray(len(a))
+    for i in range(len(a)):
+        res[i] = xor(a[i], b[i])
+    return bytes(res)
+
+def read_in_chunks(file_object, chunk_size=1024):
+    """Lazy function (generator) to read a file piece by piece.
+    Default chunk size: 1k."""
+    while True:
+        data = file_object.read(chunk_size)
+        if not data:
+            break
+        yield data
+
+def AESencrypt(key, value):
+    aes = AES.new(key)
+    ret = aes.encrypt(value)
+    return ret
+
+def AESdecrypt(key, value):
+    aes = AES.new(key)
+    ret = aes.decrypt(value)
+    return ret
+
+key = "00000000000000000000000000000000"
+pt = "0837840fb7c9fd0b7998c3cbf973c204"
+key = hextobytes(key)
+pt = hextobytes(pt)
+
+
+y  = hextobytes("00000000000000000000000000000000")
+yp = hextobytes("10000000000000000000000000000000")
+xp = hextobytes("00000000000000000000000000000000")
+
+r1 = AESencrypt(yp, xp)
+r2 = xor_arr(y, yp)
+r3 = xor_arr(r1, r2)
+r4 = AESdecrypt(y, r3)
+
+print("Question 8:")
+print(bytestohex(r4))
+
+
+x  = hextobytes("00000000000000000000000000000000")
+xp = hextobytes("10000000000000000000000000000000")
+y  = hextobytes("00000000000000000000000000000000")
+
+r1 = AESencrypt(x, x)
+r2 = AESencrypt(xp, xp)
+r3 = xor_arr(r1, r2)
+r4 = xor_arr(r3, y)
+
+print("Question 9:")
+print(bytestohex(r4))
+

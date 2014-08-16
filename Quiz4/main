@@ -1,0 +1,39 @@
+#!/usr/bin/python
+
+from operator import xor
+import binascii
+import sys
+import struct
+from Crypto.Cipher import AES
+from Crypto import Random
+
+def hextobytes(s):
+    return binascii.unhexlify(s)
+
+def bytestohex(b):
+    return binascii.hexlify(b).decode("utf-8")
+
+def chunks(l, n):
+    """ Yield successive n-sized chunks from l.
+    """
+    for i in range(0, len(l), n):
+        yield l[i:i+n]
+
+def xor_arr(a, b):
+    res = [0] * len(a) 
+    for i in range(len(a)):
+        res[i] = xor(a[i], b[i])
+    return res
+
+key = b'Sixteen byte key'
+iv = Random.new().read(AES.block_size)
+iv = hextobytes("20814804c1767293b99f1d9cab3bc3e7")
+cipher = AES.new(key, AES.MODE_CBC, iv)
+ct = cipher.encrypt(b'Pay Bob 100$____')
+
+iv = hextobytes("20814804c1767293b99f1d9cab3bc3e7")
+iv = hextobytes("20814804c1767293bd9f1d9cab3bc3e7")
+msg = iv + ct
+
+print(msg)
+print(cipher.decrypt(msg))

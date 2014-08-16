@@ -1,0 +1,158 @@
+#!/usr/bin/python
+
+from operator import xor
+import binascii
+import sys
+import struct
+from Crypto.Cipher import AES
+from Crypto.Hash import SHA256
+import gmpy2, math
+from gmpy2 import mpz, mpfr
+
+def hextobytes(s):
+    return binascii.unhexlify(s)
+
+def bytestohex(b):
+    return binascii.hexlify(b).decode("utf-8")
+
+def chunks(l, n):
+    """ Yield successive n-sized chunks from l.
+    """
+    for i in range(0, len(l), n):
+        yield l[i:i+n]
+
+def xor_arr(a, b):
+    res = [0] * len(a) 
+    for i in range(len(a)):
+        res[i] = xor(a[i], b[i])
+    return res
+
+def read_in_chunks(file_object, chunk_size=1024):
+    """Lazy function (generator) to read a file piece by piece.
+    Default chunk size: 1k."""
+    while True:
+        data = file_object.read(chunk_size)
+        if not data:
+            break
+        yield data
+
+def powmod(b,e,n):
+    """powmod(b,e,n) computes the eth power of b mod n.  
+    (Actually, this is not needed, as pow(b,e,n) does the same thing for positive integers.
+    This will be useful in future for non-integers or inverses."""
+    accum = 1; i = 0; bpow2 = b
+    while ((e>>i)>0):
+        if((e>>i) & 1):
+            accum = (accum*bpow2) % n
+        bpow2 = (bpow2*bpow2) % n
+        i+=1
+    return accum
+
+def egcd(a, b):
+    x,y, u,v = 0,1, 1,0
+    while a != 0:
+        q, r = b//a, b%a
+        m, n = x-u*q, y-v*q
+        b,a, x,y, u,v = a,r, u,v, m,n
+    gcd = b
+    return gcd, x, y
+
+def modinv(a, m):
+    gcd, x, y = egcd(a, m)
+    if gcd != 1:
+        return None  # modular inverse does not exist
+    else:
+        return x % m
+
+gmpy2.get_context().precision=1000
+
+# question 1
+print(" === question 1 === ")
+N = mpz("17976931348623159077293051907890247336179769789423065727343008115 \
+    77326758055056206869853794492129829595855013875371640157101398586 \
+    47833778606925583497541085196591615128057575940752635007475935288 \
+    71082364994994077189561705436114947486504671101510156394068052754 \
+    0071584560878577663743040086340742855278549092581")
+
+t = gmpy2.sqrt(N)
+A = mpz(gmpy2.ceil(t))
+x = gmpy2.sqrt(A * A - N)
+x = mpz(x)
+p = A - x
+q = A + x
+print("p is prime?", gmpy2.is_prime(p))
+print("q is prime?", gmpy2.is_prime(q))
+print("N == p * q?", N == p * q)
+print("min(p, q)", min(p, q))
+
+# question 4
+print(" === question 4 === ")
+pn = (p - 1) * (q - 1)
+e = 65537
+d = gmpy2.invert(e, pn)
+ct = mpz("22096451867410381776306561134883418017410069787892831071731839143676135600120538004282329650473509424343946219751512256465839967942889460764542040581564748988013734864120452325229320176487916666402997509188729971690526083222067771600019329260870009579993724077458967773697817571267229951148662959627934791540")
+
+pt = powmod(ct, d, N)
+pt = hex(pt)
+pt = "0" + pt[2:]
+pt = hextobytes(pt)
+print(pt[pt.find(0)+1:])
+
+print(" === question 2 === ")
+N = mpz("6484558428080716696628242653467722787263437207069762630604390703787 \
+    9730861808111646271401527606141756919558732184025452065542490671989 \
+    2428844841839353281972988531310511738648965962582821502504990264452 \
+    1008852816733037111422964210278402893076574586452336833570778346897 \
+    15838646088239640236866252211790085787877")
+
+t = gmpy2.sqrt(N)
+for i in range(72000, 2**20):
+    if i % 1000 == 0:
+        print(i)
+    A = i + t
+    A = mpz(A)
+    x = gmpy2.sqrt(A * A - N)
+    x = mpz(x)
+    p = A - x
+    q = A + x
+    if not (gmpy2.is_prime(p)):
+        continue
+    if not (gmpy2.is_prime(q)):
+        continue
+    if N != p * q:
+        continue
+    print("p is prime?", gmpy2.is_prime(p))
+    print("q is prime?", gmpy2.is_prime(q))
+    print("N == p * q?", N == p * q)
+    print("min(p, q)", min(p, q))
+    break
+
+print(" === question 3 === ")
+N = mpz("72006226374735042527956443552558373833808445147399984182665305798191 \
+    63556901883377904234086641876639384851752649940178970835240791356868 \
+    77441155132015188279331812309091996246361896836573643119174094961348 \
+    52463970788523879939683923036467667022162701835329944324119217381272 \
+    9276147530748597302192751375739387929")
+
+def solve2(a, b, c):
+    """Maximum number of black rings that Maria can draw, with inner radius r, given pi*t of paint. Solve using quadratic equation"""
+    import gmpy2
+    from gmpy2 import mpz
+
+    x = (-b + gmpy2.isqrt(mpz(b**2 - 4*a*c))) / (2*a) 
+    y = (-b - gmpy2.isqrt(mpz(b**2 - 4*a*c))) / (2*a) 
+    return (x, y)
+
+t = gmpy2.sqrt(6 * N)
+B = gmpy2.floor(t) + 0.5
+
+x = gmpy2.sqrt(B * B - 6 * N)
+x = mpz(x)
+p = mpz((B - x) / 3)
+q = mpz((B + x) / 2)
+
+
+print("p is prime?", gmpy2.is_prime(p))
+print("q is prime?", gmpy2.is_prime(q))
+print("N == p * q?", N == p * q)
+print("min(p, q)", min(p, q))

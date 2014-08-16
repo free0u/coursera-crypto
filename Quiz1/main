@@ -1,0 +1,21 @@
+#!/usr/bin/python
+
+from operator import xor
+import binascii
+import sys
+
+def hextostring(s):
+    return binascii.unhexlify(s)
+
+cipher = "09e1c5f70a65ac519458e7e53f36"
+cipher = hextostring(cipher)
+
+msg0 = "attack at dawn"
+msg1 = "attack at dusk"
+
+for i in range(len(cipher)):
+    k = xor(ord(msg0[i]), cipher[i])
+    o = xor(k, ord(msg1[i])) 
+    o = format(o, 'x')
+    print(o)
+
